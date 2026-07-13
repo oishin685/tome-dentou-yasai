@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f0e5">
+  <title>活動を広げるための Web・デジタルのしくみ（案）</title>
+  <style>
+    :root {
+      --paper: #f7f0e5;
+      --paper-deep: #efe2d1;
+      --ink: #36322e;
+      --muted: #70685f;
+      --accent: #b95735;
+      --accent-soft: #f0d2c2;
+      --line: #d8c6b5;
+      --white: #fffdf8;
+      --shadow: 0 18px 55px rgba(79, 51, 36, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper-deep);
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", "Noto Sans JP", sans-serif;
+      line-height: 1.75;
+    }
+
+    button, a { font: inherit; }
+    .deck { counter-reset: slide; }
+    .slide {
+      counter-increment: slide;
+      min-height: 100svh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: grid;
+      place-items: center;
+      padding: clamp(22px, 4vw, 54px);
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 8% 12%, rgba(185, 87, 53, .07) 0 7%, transparent 7.2%),
+        var(--paper);
+    }
+
+    .slide::after {
+      content: counter(slide, decimal-leading-zero);
+      position: absolute;
+      right: clamp(22px, 4vw, 52px);
+      bottom: clamp(18px, 3vw, 34px);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .18em;
+    }
+
+    .sheet {
+      width: min(1120px, 100%);
+      min-height: min(78svh, 720px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: clamp(13px, 1.4vw, 17px);
+      font-weight: 800;
+      letter-spacing: .1em;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 24px;
+      font-size: clamp(34px, 6vw, 76px);
+      line-height: 1.35;
+      letter-spacing: .02em;
+    }
+    h2 {
+      margin-bottom: clamp(26px, 4vw, 48px);
+      font-size: clamp(30px, 4.4vw, 58px);
+      line-height: 1.35;
+      letter-spacing: .02em;
+    }
+    h2::after {
+      content: "";
+      display: block;
+      width: 72px;
+      height: 5px;
+      margin-top: 16px;
+      border-radius: 99px;
+      background: var(--accent);
+    }
+    h3 { font-size: clamp(22px, 2.3vw, 32px); line-height: 1.45; }
+    p, li, td, th { font-size: clamp(17px, 1.8vw, 23px); }
+    ul { margin: 0; padding-left: 1.3em; }
+    li + li { margin-top: .55em; }
+    strong { color: var(--accent); }
+
+    .cover { contain: paint; }
+    .cover .sheet { align-items: flex-start; }
+    .cover::before {
+      content: "";
+      position: absolute;
+      width: min(55vw, 620px);
+      aspect-ratio: 1;
+      right: 0;
+      bottom: -28%;
+      border: clamp(34px, 7vw, 90px) solid var(--accent-soft);
+      border-radius: 48% 52% 45% 55%;
+      transform: rotate(18deg);
+    }
+    .cover .subtitle {
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--accent);
+      font-size: clamp(21px, 3vw, 38px);
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .overview-intro { margin-bottom: 28px; }
+    .map {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-areas: "form core password" ". archive .";
+      gap: clamp(18px, 3vw, 36px);
+      align-items: center;
+      position: relative;
+      padding: 12px 0;
+    }
+    .map::before, .map::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      background: var(--line);
+    }
+    .map::before { left: 15%; right: 15%; top: 31%; height: 3px; }
+    .map::after { top: 31%; bottom: 19%; left: 50%; width: 3px; }
+    .node {
+      min-height: 150px;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      border: 2px solid var(--line);
+      border-radius: 42% 58% 48% 52% / 55% 45% 55% 45%;
+      background: var(--white);
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-size: clamp(17px, 1.7vw, 22px);
+      font-weight: 700;
+      line-height: 1.55;
+    }
+    .node small { display: block; color: var(--muted); font-size: .72em; font-weight: 600; }
+    .node-core {
+      grid-area: core;
+      min-height: 190px;
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+      font-size: clamp(20px, 2vw, 28px);
+      transform: rotate(-1deg);
+    }
+    .node-core small { color: rgba(255,255,255,.83); }
+    .node-form { grid-area: form; transform: rotate(-1deg); }
+    .node-password { grid-area: password; transform: rotate(1deg); }
+    .node-archive { grid-area: archive; transform: rotate(-1deg); }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: clamp(14px, 2vw, 24px); text-align: left; vertical-align: top; }
+    th { color: var(--accent); background: var(--accent-soft); font-size: clamp(15px, 1.5vw, 19px); }
+    tr + tr td { border-top: 1px solid var(--line); }
+    td:first-child { width: 20%; font-weight: 800; }
+    td:nth-child(2) { width: 45%; }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: clamp(18px, 3vw, 34px);
+    }
+    .service {
+      padding: clamp(20px, 2.5vw, 30px);
+      border-left: 6px solid var(--accent);
+      border-radius: 4px 20px 20px 4px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .service h3 { margin-bottom: 12px; font-size: clamp(21px, 2vw, 28px); }
+    .service p, .service li { font-size: clamp(16px, 1.45vw, 19px); line-height: 1.6; }
+    .service p { margin-bottom: 12px; color: var(--muted); }
+    .service li + li { margin-top: .35em; }
+
+    .roles {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: clamp(20px, 4vw, 54px);
+    }
+    .role {
+      padding: clamp(28px, 4vw, 52px);
+      border-top: 7px solid var(--accent);
+      border-radius: 0 0 22px 22px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .role-name { color: var(--accent); font-size: clamp(26px, 3vw, 40px); font-weight: 800; }
+
+    .one-message {
+      display: flex;
+      align-items: center;
+      gap: clamp(22px, 4vw, 56px);
+      padding: clamp(30px, 5vw, 72px);
+      border: 2px solid var(--accent-soft);
+      border-radius: 26px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .zero {
+      flex: 0 0 auto;
+      color: var(--accent);
+      font-family: Georgia, serif;
+      font-size: clamp(76px, 13vw, 170px);
+      line-height: 1;
+    }
+    .one-message p { margin: 0; font-size: clamp(23px, 3vw, 40px); font-weight: 700; }
+
+    .closing-list {
+      display: grid;
+      gap: 22px;
+      margin-bottom: 32px;
+    }
+    .closing-list li {
+      list-style: none;
+      padding: 20px 24px 20px 64px;
+      position: relative;
+      border-bottom: 1px solid var(--line);
+      font-size: clamp(22px, 2.6vw, 34px);
+      font-weight: 700;
+    }
+    .closing-list li::before {
+      content: "●";
+      position: absolute;
+      left: 20px;
+      color: var(--accent);
+    }
+    .note { color: var(--muted); font-size: clamp(15px, 1.5vw, 19px); }
+
+    .controls {
+      position: fixed;
+      right: max(16px, env(safe-area-inset-right));
+      top: 50%;
+      z-index: 10;
+      display: grid;
+      gap: 8px;
+      transform: translateY(-50%);
+    }
+    .controls button {
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      background: rgba(255, 253, 248, .9);
+      box-shadow: 0 7px 20px rgba(79, 51, 36, .12);
+      cursor: pointer;
+    }
+    .controls button:hover, .controls button:focus-visible { color: white; background: var(--accent); outline: none; }
+    .progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 20;
+      width: 100%;
+      height: 5px;
+      background: transparent;
+    }
+    .progress span { display: block; width: 0; height: 100%; background: var(--accent); transition: width .25s ease; }
+
+    @media (max-width: 760px) {
+      html { scroll-snap-type: y proximity; }
+      .slide { min-height: 100svh; padding: 28px 22px 54px; overflow: visible; }
+      .sheet { min-height: 0; }
+      h2 { margin-bottom: 28px; }
+      p, li, td, th { font-size: 17px; }
+      .map {
+        grid-template-columns: 1fr;
+        grid-template-areas: "core" "form" "password" "archive";
+        gap: 14px;
+      }
+      .map::before { display: none; }
+      .map::after { top: 14%; bottom: 10%; left: 50%; }
+      .node, .node-core { min-height: 90px; border-radius: 18px; transform: none; }
+      .table-wrap { overflow: visible; border: 0; box-shadow: none; background: transparent; }
+      table, tbody, tr, td { display: block; }
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      tr { margin-bottom: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); box-shadow: 0 8px 24px rgba(79, 51, 36, .08); }
+      tr + tr td { border-top: 0; }
+      td, td:first-child, td:nth-child(2) { width: auto; padding: 5px 0; }
+      td:first-child { color: var(--accent); font-size: 20px; }
+      td:last-child { color: var(--muted); }
+      .service-grid, .roles { grid-template-columns: 1fr; }
+      .one-message { align-items: flex-start; padding: 28px 24px; }
+      .zero { font-size: 86px; }
+      .controls { right: 10px; top: auto; bottom: 10px; grid-template-columns: repeat(2, 42px); transform: none; }
+      .controls button { width: 42px; height: 42px; }
+      .slide::after { left: 22px; right: auto; bottom: 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .progress span { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><span></span></div>
+  <nav class="controls" aria-label="スライド操作">
+    <button type="button" data-move="-1" aria-label="前のスライド">↑</button>
+    <button type="button" data-move="1" aria-label="次のスライド">↓</button>
+  </nav>
+
+  <main class="deck">
+    <section class="slide cover" aria-labelledby="cover-title">
+      <div class="sheet">
+        <p class="eyebrow">登米伝統野菜・在来種野菜を守り育て隊</p>
+        <h1 id="cover-title">登米伝統野菜・<br>在来種野菜を守り育て隊</h1>
+        <p class="subtitle">― 活動を広げるための Web・デジタルのしくみ（案）―</p>
+      </div>
+    </section>
+
+    <section class="slide" aria-labelledby="overview-title">
+      <div class="sheet">
+        <p class="eyebrow">01</p>
+        <h2 id="overview-title">全体像</h2>
+        <p class="overview-intro">真ん中に <strong>ホームページ（GitHub Pages）</strong>。記事もここに書きます。<br>そのまわりに3つ。</p>
+        <div class="map" role="img" aria-label="ホームページを中心に、お問い合わせフォーム、パスワード管理、記録・保管がつながる全体像">
+          <div class="node node-core">ホームページ<small>GitHub Pages</small></div>
+          <div class="node node-form">お問い合わせフォーム<small>Googleフォーム</small></div>
+          <div class="node node-password">パスワード管理<small>Bitwarden</small></div>
+          <div class="node node-archive">記録・保管<small>Google Drive</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-labelledby="services-title">
+      <div class="sheet">
+        <p class="eyebrow">02</p>
+        <h2 id="services-title">使うサービス</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>場所</th><th>すること</th><th>使うサービス</th></tr></thead>
+            <tbody>
+              <tr><td>ホームページ</td><td>活動を知ってもらう拠点。記事・活動記録もここに書く</td><td>GitHub Pages（GitHubの無料サービス）</td></tr>
+              <tr><td>お問い合わせ</td><td>連絡・質問を受け取る</td><td>Googleフォーム（無料）</td></tr>
+              <tr><td>パスワード管理</td><td>ログイン情報を安全に保管</td><td>Bitwarden</td></tr>
+              <tr><td>記録・保管</td><td>運営の記録をまとめる</td><td>Google Drive（無料）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-labelledby="details-title">
+      <div class="sheet">
+        <p class="eyebrow">03</p>
+        <h2 id="details-title">くわしく：GitHub Pages と Bitwarden とは</h2>
+        <div class="service-grid">
+          <article class="service">
+            <h3>GitHub Pages（ギットハブ ページズ）</h3>
+            <p>ホームページをインターネット上に無料で公開できるしくみです。「GitHub」という、世界中のエンジニアが使っている大きなサービスが提供しています。</p>
+            <ul>
+              <li>無料で使える</li>
+              <li>大きな会社が運営しているので、急に消える心配が少なく、安定している</li>
+              <li>ホームページのデータはすべて記録として残るので、後から別の人が引き継ぐこともできる</li>
+            </ul>
+          </article>
+          <article class="service">
+            <h3>Bitwarden（ビットワーデン）</h3>
+            <p>いろいろなサービスのログイン情報（IDとパスワード）を、ひとつの安全な場所にまとめて保管できるサービスです。</p>
+            <ul>
+              <li>パスワードをバラバラに覚えたり、紙に書いて失くしたりしなくて済む</li>
+              <li>世界中で使われている、信頼性の高いサービス</li>
+              <li>必要な人だけで、安全に共有することもできる</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-labelledby="roles-title">
+      <div class="sheet">
+        <p class="eyebrow">04</p>
+        <h2 id="roles-title">誰が何をするか</h2>
+        <div class="roles">
+          <article class="role"><div class="role-name">しんや</div><p>ホームページとしくみづくり・管理</p></article>
+          <article class="role"><div class="role-name">勝義さん</div><p>記事作成、伝えたいことを表現</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-labelledby="cost-title">
+      <div class="sheet">
+        <p class="eyebrow">05</p>
+        <h2 id="cost-title">費用</h2>
+        <div class="one-message">
+          <div class="zero" aria-hidden="true">0</div>
+          <p>使うサービスは、基本的に無料で始められます</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" aria-labelledby="summary-title">
+      <div class="sheet">
+        <p class="eyebrow">06</p>
+        <h2 id="summary-title">まとめ</h2>
+        <ul class="closing-list">
+          <li>まずは小さく、シンプルに始める</li>
+          <li>必要になったら、少しずつ足していける</li>
+        </ul>
+        <p class="note">※ ホームページの中身の構成（どんなページを作るか）は、別の資料でお渡しします。</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const slides = [...document.querySelectorAll('.slide')];
+      const bar = document.querySelector('.progress span');
+      let current = 0;
+
+      const show = (index) => {
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        slides[current].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      document.querySelectorAll('[data-move]').forEach((button) => {
+        button.addEventListener('click', () => show(current + Number(button.dataset.move)));
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(event.key)) { event.preventDefault(); show(current + 1); }
+        if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); show(current - 1); }
+        if (event.key === 'Home') { event.preventDefault(); show(0); }
+        if (event.key === 'End') { event.preventDefault(); show(slides.length - 1); }
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          current = slides.indexOf(entry.target);
+          bar.style.width = `${((current + 1) / slides.length) * 100}%`;
+        });
+      }, { threshold: .6 });
+
+      slides.forEach((slide) => observer.observe(slide));
+    })();
+  </script>
+</body>
+</html>
